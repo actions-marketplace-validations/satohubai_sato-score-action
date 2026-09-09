@@ -1,0 +1,37 @@
+name: self-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run the action on its own repo (warn-only)
+        id: sato
+        uses: ./
+        with:
+          packages: "solana-agent-kit, express"
+          repos: "coinbase/agentkit"
+          package-json: "false"
+          fail-on-deprecated: "false"
+          warn-below: "40"
+
+      - name: Show outputs
+        run: |
+          echo "slug=${{ steps.sato.outputs.slug }}"
+          echo "score=${{ steps.sato.outputs.score }}"
+          echo "unlisted_count=${{ steps.sato.outputs.unlisted_count }}"
+
+      - name: Local assertions against the live resolver
+        run: node test/run.mjs

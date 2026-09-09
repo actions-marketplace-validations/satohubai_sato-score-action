@@ -1,0 +1,88 @@
+name: "Sato Score"
+description: "Check your crypto-agent dependencies against Sato Hub: fail or warn on retired listings or low Sato Scores, and refresh the README badge."
+author: "Sato Hub"
+
+branding:
+  icon: "hexagon"
+  color: "green"
+
+inputs:
+  repo:
+    description: "GitHub repository (owner/name or URL) whose OWN listing is resolved and used for the badge and the score/tier/slug outputs."
+    required: false
+    default: ${{ github.repository }}
+  packages:
+    description: "npm package names to check, newline- or comma-separated."
+    required: false
+    default: ""
+  repos:
+    description: "GitHub repositories (owner/name or URLs) to check, newline- or comma-separated."
+    required: false
+    default: ""
+  package-json:
+    description: "Path to a package.json whose dependencies + devDependencies are checked. Defaults to ./package.json when it exists. Set to 'false' to opt out."
+    required: false
+    default: ""
+  fail-on-deprecated:
+    description: "Fail the job when a checked dependency's listing is retired (HTTP 410)."
+    required: false
+    default: "true"
+  fail-below:
+    description: "Integer 0-100. Fail the job when a checked dependency's Sato Score is below this. Empty = never fail on score."
+    required: false
+    default: ""
+  warn-below:
+    description: "Integer 0-100. Emit a warning when a checked dependency's Sato Score is below this."
+    required: false
+    default: "40"
+  update-badge:
+    description: "Rewrite README between <!-- sato-score-badge:start --> and <!-- sato-score-badge:end --> with the badge markdown. Only when the repo's own listing resolves. Never commits."
+    required: false
+    default: "false"
+  readme:
+    description: "Path to the README the badge is written into."
+    required: false
+    default: "README.md"
+
+outputs:
+  score:
+    description: "Sato Score of the repo's own listing (integer), or empty."
+    value: ${{ steps.run.outputs.score }}
+  tier:
+    description: "Sato tier of the repo's own listing (High / Medium / Low), or empty."
+    value: ${{ steps.run.outputs.tier }}
+  slug:
+    description: "Sato Hub slug of the repo's own listing, or empty."
+    value: ${{ steps.run.outputs.slug }}
+  verify_url:
+    description: "Public Sato Score report URL for the repo's own listing, or empty."
+    value: ${{ steps.run.outputs.verify_url }}
+  deprecated:
+    description: "Comma-separated identifiers of checked dependencies whose listing is retired."
+    value: ${{ steps.run.outputs.deprecated }}
+  below_threshold:
+    description: "Comma-separated identifiers of checked dependencies scoring below fail-below."
+    value: ${{ steps.run.outputs.below_threshold }}
+  unlisted_count:
+    description: "Number of checked dependencies with no Sato Hub listing (informational)."
+    value: ${{ steps.run.outputs.unlisted_count }}
+  report:
+    description: "The markdown report that was written to the job summary."
+    value: ${{ steps.run.outputs.report }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: run
+      shell: bash
+      env:
+        INPUT_REPO: ${{ inputs.repo }}
+        INPUT_PACKAGES: ${{ inputs.packages }}
+        INPUT_REPOS: ${{ inputs.repos }}
+        INPUT_PACKAGE-JSON: ${{ inputs.package-json }}
+        INPUT_FAIL-ON-DEPRECATED: ${{ inputs.fail-on-deprecated }}
+        INPUT_FAIL-BELOW: ${{ inputs.fail-below }}
+        INPUT_WARN-BELOW: ${{ inputs.warn-below }}
+        INPUT_UPDATE-BADGE: ${{ inputs.update-badge }}
+        INPUT_README: ${{ inputs.readme }}
+      run: node "${{ github.action_path }}/src/main.mjs"
