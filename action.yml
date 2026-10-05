@@ -1,9 +1,9 @@
 name: "Sato Score"
-description: "Check your crypto-agent dependencies against Sato Hub: fail or warn on retired listings or low Sato Scores, and refresh the README badge."
+description: "Check crypto-agent dependencies against Sato Hub: warn or fail on retired or low-score listings, refresh your badge."
 author: "Sato Hub"
 
 branding:
-  icon: "hexagon"
+  icon: "package"
   color: "green"
 
 inputs:
